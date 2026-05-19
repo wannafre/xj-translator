@@ -356,9 +356,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // Flag and Lang label parser
   String _getLangLabel(String code) {
     switch (code.toLowerCase()) {
-      case 'zh':
+      case '中文':
         return '🇨🇳 中文';
-      case 'en':
+      case 'English':
         return '🇺🇸 English';
       case 'ja':
         return '🇯🇵 日本語';

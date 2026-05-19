@@ -36,8 +36,8 @@ class TranslationProvider extends ChangeNotifier {
   // Basic Reactive State
   List<TranslationRecord> _history = [];
   bool _isLoading = false;
-  String _sourceLang = 'zh';
-  String _targetLang = 'en';
+  String _sourceLang = '中文';
+  String _targetLang = 'English';
   String _currentTranslation = '';
   String _errorMessage = '';
 
@@ -114,7 +114,7 @@ class TranslationProvider extends ChangeNotifier {
   // Load offline settings & incognito status from SharedPreferences
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // 1. Load Incognito mode status
     _isIncognito = prefs.getBool('is_incognito') ?? false;
 
@@ -137,20 +137,29 @@ class TranslationProvider extends ChangeNotifier {
     final localLlmService = LocalLlmService();
 
     for (var model in _offlineModels) {
+      // 正在下载中的模型不做物理校验，避免中断状态或被误判为已完成下载
+      if (localLlmService.isModelDownloading(model.id)) {
+        continue;
+      }
+
       // 物理检测该模型是否存在于本地存储中（如果是 Web 平台会通过 SharedPreferences 检测状态）
-      final bool actuallyDownloaded = await localLlmService.isModelDownloaded(model.id);
-      
+      final bool actuallyDownloaded = await localLlmService.isModelDownloaded(
+        model.id,
+      );
+
       // 如果实际存在性与内存状态不匹配，进行修正
       if (model.isDownloaded != actuallyDownloaded) {
         model.isDownloaded = actuallyDownloaded;
         stateChanged = true;
-        
+
         // 如果被删除的模型正好是当前默认选中的模型，自动安全降级回默认的 'qwen_1.5b'
         if (!actuallyDownloaded && _defaultModelId == model.id) {
           _defaultModelId = 'qwen_1.5b';
         }
-        
-        debugPrint('🤖 [模型校验] 检测到模型 "${model.name}" (${model.id}) 的本地文件状态不一致，实际存在：$actuallyDownloaded。已自动同步！');
+
+        debugPrint(
+          '🤖 [模型校验] 检测到模型 "${model.name}" (${model.id}) 的本地文件状态不一致，实际存在：$actuallyDownloaded。已自动同步！',
+        );
       }
     }
 
@@ -224,11 +233,14 @@ class TranslationProvider extends ChangeNotifier {
 
       // Apply automatic cleanup if document retention is configured (e.g., 7 days)
       if (_documentRetentionDays > 0) {
-        final cutoff = DateTime.now().subtract(Duration(days: _documentRetentionDays));
+        final cutoff = DateTime.now().subtract(
+          Duration(days: _documentRetentionDays),
+        );
         bool modified = false;
 
         loadedHistory.removeWhere((record) {
-          final isDoc = record.originalText.toLowerCase().endsWith('.pdf') ||
+          final isDoc =
+              record.originalText.toLowerCase().endsWith('.pdf') ||
               record.originalText.toLowerCase().endsWith('.docx') ||
               record.originalText.toLowerCase().endsWith('.txt') ||
               record.originalText.contains('→');
@@ -256,11 +268,16 @@ class TranslationProvider extends ChangeNotifier {
     }
   }
 
+  String _lastTranslatedText = '';
+
   // 2. Set Languages
   void setLanguages(String source, String target) {
     _sourceLang = source;
     _targetLang = target;
     notifyListeners();
+    if (_lastTranslatedText.trim().isNotEmpty) {
+      translateText(_lastTranslatedText);
+    }
   }
 
   // 3. Swap Languages
@@ -269,10 +286,14 @@ class TranslationProvider extends ChangeNotifier {
     _sourceLang = _targetLang;
     _targetLang = temp;
     notifyListeners();
+    if (_lastTranslatedText.trim().isNotEmpty) {
+      translateText(_lastTranslatedText);
+    }
   }
 
   // 4. Translate text action (Integrated with local model name & incognito mode check)
   Future<void> translateText(String text) async {
+    _lastTranslatedText = text;
     if (text.trim().isEmpty) {
       _errorMessage = '请输入需要翻译的文本！';
       _currentTranslation = '';
@@ -290,14 +311,17 @@ class TranslationProvider extends ChangeNotifier {
 
     try {
       final localLlmService = LocalLlmService();
-      
+
       // 先进行一次全面的本地模型文件状态校验（防止用户在前台/后台手动删除了文件）
       await verifyDownloadedModels();
-      
+
       // Check if the default model is downloaded (on all platforms)
-      final isDownloaded = await localLlmService.isModelDownloaded(_defaultModelId);
+      final isDownloaded = await localLlmService.isModelDownloaded(
+        _defaultModelId,
+      );
       if (!isDownloaded) {
-        _errorMessage = '当前默认的大模型「${activeDefaultModel.name}」未下载，请先在「模型管理」中下载该模型后使用！';
+        _errorMessage =
+            '当前默认的大模型「${activeDefaultModel.name}」未下载，请先在「模型管理」中下载该模型后使用！';
         _isLoading = false;
         notifyListeners();
         return;
@@ -330,7 +354,7 @@ class TranslationProvider extends ChangeNotifier {
         },
         onDone: () async {
           _isLoading = false;
-          
+
           final modelSuffix = " \n\n[⚡ 本地离线推理：${activeDefaultModel.name}]";
           final rawTranslation = _currentTranslation;
           _currentTranslation = rawTranslation + modelSuffix;
@@ -340,7 +364,7 @@ class TranslationProvider extends ChangeNotifier {
           if (!_isIncognito) {
             final recordToSave = TranslationRecord(
               originalText: text,
-              translatedText: rawTranslation + " (${activeDefaultModel.name} 离线)",
+              translatedText: "$rawTranslation (${activeDefaultModel.name} 离线)",
               sourceLang: _sourceLang,
               targetLang: _targetLang,
               timestamp: DateTime.now(),
@@ -428,10 +452,10 @@ class TranslationProvider extends ChangeNotifier {
     if (modelIndex == -1) return;
 
     final model = _offlineModels[modelIndex];
-    
+
     // Call LocalLlmService to delete the actual local GGUF file
     final deleted = await LocalLlmService().deleteModelFile(modelId);
-    
+
     if (deleted || !LocalLlmService().isNativeSupported) {
       model.isDownloaded = false;
       model.downloadProgress = 0.0;

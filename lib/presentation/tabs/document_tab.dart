@@ -292,7 +292,7 @@ class _DocumentTabState extends State<DocumentTab> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 16,
                 spreadRadius: 4,
               ),
@@ -425,7 +425,7 @@ class _DocumentTabState extends State<DocumentTab> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(isDark ? 0.15 : 0.25),
+                      color: color.withValues(alpha: isDark ? 0.15 : 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -500,16 +500,16 @@ class _DocumentTabState extends State<DocumentTab> {
     }).toList();
 
     // Language labels synced with provider source and target langs
-    final String srcLangName = provider.sourceLang == 'zh'
+    final String srcLangName = provider.sourceLang == '中文'
         ? '🇨🇳 中文'
-        : (provider.sourceLang == 'en'
+        : (provider.sourceLang == 'English'
               ? '🇺🇸 English'
-              : '🌐 ' + provider.sourceLang.toUpperCase());
-    final String targetLangName = provider.targetLang == 'zh'
+              : '🌐 ${provider.sourceLang.toUpperCase()}');
+    final String targetLangName = provider.targetLang == '中文'
         ? '🇨🇳 中文'
-        : (provider.targetLang == 'en'
+        : (provider.targetLang == 'English'
               ? '🇺🇸 English'
-              : '🌐 ' + provider.targetLang.toUpperCase());
+              : '🌐 ${provider.targetLang.toUpperCase()}');
 
     return Container(
       color: isDark ? const Color(0xFF0F0E1E) : const Color(0xFFF9F8FD),
@@ -533,13 +533,13 @@ class _DocumentTabState extends State<DocumentTab> {
                         color: isDark ? const Color(0xFF1E1B2E) : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: primaryColor.withOpacity(0.2),
+                          color: primaryColor.withValues(alpha: 0.2),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(
-                              isDark ? 0.2 : 0.03,
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.2 : 0.03,
                             ),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
@@ -554,7 +554,7 @@ class _DocumentTabState extends State<DocumentTab> {
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.08),
+                              color: primaryColor.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -693,8 +693,8 @@ class _DocumentTabState extends State<DocumentTab> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(
-                                isDark ? 0.1 : 0.02,
+                              color: Colors.black.withValues(
+                                alpha: isDark ? 0.1 : 0.02,
                               ),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
@@ -708,7 +708,7 @@ class _DocumentTabState extends State<DocumentTab> {
                               width: 46,
                               height: 46,
                               decoration: BoxDecoration(
-                                color: typeColor.withOpacity(0.08),
+                                color: typeColor.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               alignment: Alignment.center,
@@ -782,7 +782,7 @@ class _DocumentTabState extends State<DocumentTab> {
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: primaryColor.withOpacity(0.08),
+                                    color: primaryColor.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(

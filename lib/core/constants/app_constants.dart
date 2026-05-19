@@ -10,8 +10,8 @@ class AppConstants {
 
   // Translation configuration
   static const List<Map<String, String>> supportedLanguages = [
-    {'code': 'zh', 'name': '中文'},
-    {'code': 'en', 'name': 'English'},
+    {'code': '中文', 'name': '中文'},
+    {'code': 'English', 'name': 'English'},
     {'code': 'ja', 'name': '日本語'},
     {'code': 'ko', 'name': '한국어'},
   ];

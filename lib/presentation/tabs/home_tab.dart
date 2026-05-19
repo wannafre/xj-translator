@@ -7,14 +7,10 @@ import '../../logic/providers/translation_provider.dart';
 import '../components/custom_button.dart';
 import '../screens/model_management_screen.dart';
 
-
 class HomeTab extends StatefulWidget {
   final ValueChanged<int> onNavigateToTab;
 
-  const HomeTab({
-    super.key,
-    required this.onNavigateToTab,
-  });
+  const HomeTab({super.key, required this.onNavigateToTab});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -99,13 +95,13 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
         } else if (_simulationPhase == 2) {
           // Phase 2: Speech recognized (Spoken text appears)
           _isSoundDetected = false;
-          _simulatedSpoken = provider.sourceLang == 'zh'
+          _simulatedSpoken = provider.sourceLang == '中文'
               ? "你好，请问这附近有没有好的餐厅推荐？"
               : "Hello, are there any good restaurants nearby that you would recommend?";
         } else if (_simulationPhase == 3) {
           // Phase 3: Translation completed (Translated text appears)
           _isSoundDetected = false;
-          _simulatedTranslated = provider.sourceLang == 'zh'
+          _simulatedTranslated = provider.sourceLang == '中文'
               ? "Hello, are there any good restaurants nearby that you would recommend?"
               : "你好，请问这附近有没有好的餐厅推荐？";
         }
@@ -134,7 +130,12 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
 
     // IMMERSIVE LIVE LISTENING MODE (Focused screen exactly matching user's screenshot)
     if (_selectedSegmentIndex == 0 && _isInstantActive) {
-      return _buildFocusedInstantScreen(context, provider, primaryColor, isDark);
+      return _buildFocusedInstantScreen(
+        context,
+        provider,
+        primaryColor,
+        isDark,
+      );
     }
 
     // STANDARD MODE (Regular Tab Layout)
@@ -174,15 +175,24 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               // Incognito Status
               if (provider.isIncognito)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.amber.shade700.withOpacity(0.12),
+                    color: Colors.amber.shade700.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.shade700.withOpacity(0.25)),
+                    border: Border.all(
+                      color: Colors.amber.shade700.withValues(alpha: 0.25),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.security_rounded, size: 12, color: Colors.amber.shade700),
+                      Icon(
+                        Icons.security_rounded,
+                        size: 12,
+                        color: Colors.amber.shade700,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '无痕模式已开启',
@@ -244,10 +254,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: primaryColor.withOpacity(0.3),
+                            color: primaryColor.withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ]
                       : null,
                 ),
@@ -259,17 +269,23 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       size: 16,
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                          : (isDark
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade600),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       segments[index]['name'],
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         color: isSelected
                             ? Colors.white
-                            : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                            : (isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade600),
                       ),
                     ),
                   ],
@@ -283,16 +299,23 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
   }
 
   // Language selectors card (🇨🇳 中文, 🇺🇸 English cards + Swap button)
-  Widget _buildLanguageSelector(BuildContext context, TranslationProvider provider) {
+  Widget _buildLanguageSelector(
+    BuildContext context,
+    TranslationProvider provider,
+  ) {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final String srcLangName = provider.sourceLang == 'zh'
+    final String srcLangName = provider.sourceLang == '中文'
         ? '🇨🇳 中文'
-        : (provider.sourceLang == 'en' ? '🇺🇸 English' : '🌐 ' + provider.sourceLang.toUpperCase());
-    final String targetLangName = provider.targetLang == 'zh'
+        : (provider.sourceLang == 'English'
+              ? '🇺🇸 English'
+              : '🌐 ${provider.sourceLang.toUpperCase()}');
+    final String targetLangName = provider.targetLang == '中文'
         ? '🇨🇳 中文'
-        : (provider.targetLang == 'en' ? '🇺🇸 English' : '🌐 ' + provider.targetLang.toUpperCase());
+        : (provider.targetLang == 'English'
+              ? '🇺🇸 English'
+              : '🌐 ${provider.targetLang.toUpperCase()}');
 
     return Row(
       children: [
@@ -302,7 +325,8 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
             context,
             label: srcLangName,
             isDark: isDark,
-            onTap: () => _showLanguageSelectDialog(context, provider, isSource: true),
+            onTap: () =>
+                _showLanguageSelectDialog(context, provider, isSource: true),
           ),
         ),
 
@@ -315,10 +339,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.4),
+                  color: primaryColor.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
-                )
+                ),
               ],
             ),
             child: IconButton(
@@ -336,7 +360,8 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
             context,
             label: targetLangName,
             isDark: isDark,
-            onTap: () => _showLanguageSelectDialog(context, provider, isSource: false),
+            onTap: () =>
+                _showLanguageSelectDialog(context, provider, isSource: false),
           ),
         ),
       ],
@@ -365,22 +390,22 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               color: Colors.black12,
               blurRadius: 6,
               offset: Offset(0, 2),
-            )
+            ),
           ],
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
   // Core action container switches between Instant Translation and Text Translation
-  Widget _buildCoreActionContainer(BuildContext context, TranslationProvider provider) {
+  Widget _buildCoreActionContainer(
+    BuildContext context,
+    TranslationProvider provider,
+  ) {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -396,10 +421,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, 2),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -409,7 +434,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.mic_rounded, color: primaryColor, size: 42),
@@ -438,15 +463,23 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       title: const Row(
                         children: [
-                          Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 24,
+                          ),
                           SizedBox(width: 8),
                           Text('翻译大模型未就绪'),
                         ],
                       ),
-                      content: Text('当前默认的大模型「${provider.activeDefaultModel.name}」尚未下载，无法进行本地离线即时语音翻译。\n\n请前往「模型管理」下载该大模型后重试。'),
+                      content: Text(
+                        '当前默认的大模型「${provider.activeDefaultModel.name}」尚未下载，无法进行本地离线即时语音翻译。\n\n请前往「模型管理」下载该大模型后重试。',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -457,10 +490,16 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                             Navigator.pop(context);
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ModelManagementScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ModelManagementScreen(),
+                              ),
                             );
                           },
-                          child: const Text('去下载', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            '去下载',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -473,12 +512,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 });
               },
             ),
-
           ],
         ),
       );
     }
-
     // SEGMENT 1: TEXT TRANSLATION (文本翻译 - Premium Screen matching user's screenshot)
     else {
       return Column(
@@ -495,10 +532,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
-                )
+                ),
               ],
             ),
             child: Column(
@@ -515,7 +552,9 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   decoration: InputDecoration(
                     hintText: '输入或粘贴要翻译的文本...',
                     hintStyle: TextStyle(
-                      color: isDark ? Colors.grey.shade600 : const Color(0xFF9CA3AF),
+                      color: isDark
+                          ? Colors.grey.shade600
+                          : const Color(0xFF9CA3AF),
                       fontSize: 16,
                     ),
                     border: InputBorder.none,
@@ -531,9 +570,12 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   children: [
                     // A. Model Badge (e.g. ● Qwen2.5-1.5B)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.08),
+                        color: primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -565,7 +607,11 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       children: [
                         if (_textController.text.isNotEmpty)
                           IconButton(
-                            icon: Icon(Icons.delete_outline_rounded, color: Colors.grey.shade500, size: 22),
+                            icon: Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.grey.shade500,
+                              size: 22,
+                            ),
                             onPressed: () {
                               setState(() {
                                 _textController.clear();
@@ -574,21 +620,37 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                             },
                           ),
                         IconButton(
-                          icon: Icon(Icons.camera_alt_outlined, color: Colors.grey.shade500, size: 22),
+                          icon: Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.grey.shade500,
+                            size: 22,
+                          ),
                           onPressed: () {
-                            _showMockDialog(context, '拍照翻译', '正在启动系统相机拍摄画面...\n[模拟：成功识别取景框文字并翻译]');
+                            _showMockDialog(
+                              context,
+                              '拍照翻译',
+                              '正在启动系统相机拍摄画面...\n[模拟：成功识别取景框文字并翻译]',
+                            );
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.image_outlined, color: Colors.grey.shade500, size: 22),
+                          icon: Icon(
+                            Icons.image_outlined,
+                            color: Colors.grey.shade500,
+                            size: 22,
+                          ),
                           onPressed: () {
-                            _showMockDialog(context, '图片导入翻译', '正在调取相册并启动 OCR 识别...\n[模拟：成功提取图片文字并自动输入]');
+                            _showMockDialog(
+                              context,
+                              '图片导入翻译',
+                              '正在调取相册并启动 OCR 识别...\n[模拟：成功提取图片文字并自动输入]',
+                            );
                           },
                         ),
                       ],
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -603,10 +665,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.25),
+                  color: primaryColor.withValues(alpha: 0.25),
                   blurRadius: 14,
                   offset: const Offset(0, 6),
-                )
+                ),
               ],
             ),
             child: Column(
@@ -615,7 +677,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 Text(
                   '翻译结果',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -627,10 +689,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   provider.isLoading
                       ? '正在离线翻译中...'
                       : (provider.errorMessage.isNotEmpty
-                          ? provider.errorMessage
-                          : (provider.currentTranslation.isNotEmpty
-                              ? provider.currentTranslation
-                              : 'Translation will appear here...')),
+                            ? provider.errorMessage
+                            : (provider.currentTranslation.isNotEmpty
+                                  ? provider.currentTranslation
+                                  : 'Translation will appear here...')),
                   style: TextStyle(
                     color: provider.errorMessage.isNotEmpty
                         ? Colors.amber.shade200
@@ -640,7 +702,6 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                     height: 1.4,
                   ),
                 ),
-
 
                 const SizedBox(height: 24),
 
@@ -661,19 +722,30 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                               },
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.16),
+                            color: Colors.white.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.content_copy_rounded, color: Colors.white, size: 14),
+                              Icon(
+                                Icons.content_copy_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 '复制',
-                                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                              )
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -687,30 +759,45 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                         onTap: provider.currentTranslation.isEmpty
                             ? null
                             : () {
-                                _showMockDialog(context, '分享翻译结果', '分享渠道:\n1. 微信 (WeChat)\n2. QQ\n3. 系统分享\n[已模拟拉取微信分享包]');
+                                _showMockDialog(
+                                  context,
+                                  '分享翻译结果',
+                                  '分享渠道:\n1. 微信 (WeChat)\n2. QQ\n3. 系统分享\n[已模拟拉取微信分享包]',
+                                );
                               },
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.16),
+                            color: Colors.white.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.reply_rounded, color: Colors.white, size: 14),
+                              Icon(
+                                Icons.reply_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 '分享',
-                                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                              )
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -721,7 +808,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.05),
+              color: primaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(30),
             ),
             child: Row(
@@ -754,22 +841,35 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
     bool isDark,
   ) {
     // 1. Core aesthetic color tokens dynamically determined by Day/Night state
-    final Color bgColor = isDark ? const Color(0xFF0F0E1E) : const Color(0xFFF9F8FD);
-    final Color keeperBg = isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEDE9FE);
-    final Color keeperTextColor = isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED);
-    
-    final Color spokenCardBg = isDark ? const Color(0xFF221E52) : const Color(0xFFF0EFF8);
-    final Color spokenTextColor = isDark ? Colors.white : const Color(0xFF1F2937);
+    final Color bgColor = isDark
+        ? const Color(0xFF0F0E1E)
+        : const Color(0xFFF9F8FD);
+    final Color keeperBg = isDark
+        ? const Color(0xFF1E1B4B)
+        : const Color(0xFFEDE9FE);
+    final Color keeperTextColor = isDark
+        ? const Color(0xFFC084FC)
+        : const Color(0xFF7C3AED);
+
+    final Color spokenCardBg = isDark
+        ? const Color(0xFF221E52)
+        : const Color(0xFFF0EFF8);
+    final Color spokenTextColor = isDark
+        ? Colors.white
+        : const Color(0xFF1F2937);
     final Color spokenDotColor = primaryColor;
-    
-    final Color transCardBg = primaryColor; // Solid dynamic theme purple for output
-    
-    final Color btnBg = isDark ? const Color(0xFF221E52) : const Color(0xFFF0EFF8);
+
+    final Color transCardBg =
+        primaryColor; // Solid dynamic theme purple for output
+
+    final Color btnBg = isDark
+        ? const Color(0xFF221E52)
+        : const Color(0xFFF0EFF8);
     final Color btnIconColor = isDark ? Colors.white : primaryColor;
 
     // Language flag emojis
-    final String srcEmoji = provider.sourceLang == 'zh' ? '🇨🇳' : '🇺🇸';
-    final String targetEmoji = provider.targetLang == 'zh' ? '🇨🇳' : '🇺🇸';
+    final String srcEmoji = provider.sourceLang == '中文' ? '🇨🇳' : '🇺🇸';
+    final String targetEmoji = provider.targetLang == '中文' ? '🇨🇳' : '🇺🇸';
 
     // Wave color turns glowing green when vocal sound is detected by simulation
     final Color waveColor = _isSoundDetected
@@ -796,7 +896,11 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.phone_in_talk_rounded, color: keeperTextColor, size: 16),
+                  Icon(
+                    Icons.phone_in_talk_rounded,
+                    color: keeperTextColor,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     '应用保活中 · 即时翻译运行中',
@@ -816,10 +920,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  srcEmoji,
-                  style: const TextStyle(fontSize: 32),
-                ),
+                Text(srcEmoji, style: const TextStyle(fontSize: 32)),
                 const SizedBox(width: 20),
                 Icon(
                   Icons.swap_horiz_rounded,
@@ -827,10 +928,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                   size: 24,
                 ),
                 const SizedBox(width: 20),
-                Text(
-                  targetEmoji,
-                  style: const TextStyle(fontSize: 32),
-                ),
+                Text(targetEmoji, style: const TextStyle(fontSize: 32)),
               ],
             ),
             const SizedBox(height: 48),
@@ -875,7 +973,9 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        provider.sourceLang == 'zh' ? '你说的 · 中文' : 'You said · English',
+                        provider.sourceLang == '中文'
+                            ? '你说的 · 中文'
+                            : 'You said · English',
                         style: TextStyle(
                           color: isDark ? Colors.white60 : Colors.black45,
                           fontSize: 12,
@@ -896,7 +996,9 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       height: 1.4,
-                      fontStyle: _simulatedSpoken.isEmpty ? FontStyle.italic : FontStyle.normal,
+                      fontStyle: _simulatedSpoken.isEmpty
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
                 ],
@@ -912,10 +1014,10 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: transCardBg.withOpacity(0.2),
+                    color: transCardBg.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ],
               ),
               child: Column(
@@ -933,9 +1035,11 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        provider.sourceLang == 'zh' ? '翻译 · English' : 'Translation · 中文',
+                        provider.sourceLang == '中文'
+                            ? '翻译 · English'
+                            : 'Translation · 中文',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -950,7 +1054,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                     style: TextStyle(
                       color: _simulatedTranslated.isNotEmpty
                           ? Colors.white
-                          : Colors.white.withOpacity(0.4),
+                          : Colors.white.withValues(alpha: 0.4),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       height: 1.4,
@@ -985,7 +1089,9 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                      _isPaused
+                          ? Icons.play_arrow_rounded
+                          : Icons.pause_rounded,
                       color: btnIconColor,
                       size: 26,
                     ),
@@ -1003,11 +1109,13 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                     boxShadow: [
                       BoxShadow(
                         color: _isSoundDetected
-                            ? const Color(0xFF10B981).withOpacity(0.6) // glowing neon green shadow
-                            : primaryColor.withOpacity(0.35),
+                            ? const Color(0xFF10B981).withValues(
+                                alpha: 0.6,
+                              ) // glowing neon green shadow
+                            : primaryColor.withValues(alpha: 0.35),
                         blurRadius: _isSoundDetected ? 24 : 14,
                         spreadRadius: _isSoundDetected ? 6 : 2,
-                      )
+                      ),
                     ],
                   ),
                   child: const Icon(
@@ -1061,8 +1169,13 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
             children: AppConstants.supportedLanguages.map((lang) {
               return ListTile(
                 title: Text(lang['name']!),
-                trailing: (isSource ? provider.sourceLang : provider.targetLang) == lang['code']
-                    ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                trailing:
+                    (isSource ? provider.sourceLang : provider.targetLang) ==
+                        lang['code']
+                    ? Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
                     : null,
                 onTap: () {
                   if (isSource) {
@@ -1091,7 +1204,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('确定'),
-          )
+          ),
         ],
       ),
     );
@@ -1123,21 +1236,28 @@ class VocalWavePainter extends CustomPainter {
     final path1 = Path();
     path1.moveTo(0, midY);
     for (double x = 0; x <= size.width; x += 1.0) {
-      final y = midY + amplitude * math.sin((x / size.width) * 2 * math.pi * 1.5 - phase);
+      final y =
+          midY +
+          amplitude * math.sin((x / size.width) * 2 * math.pi * 1.5 - phase);
       path1.lineTo(x, y);
     }
     canvas.drawPath(path1, paint1);
 
     // Draw overlapping sin wave 2 (Holographic secondary wave, offset, thinner)
     final paint2 = Paint()
-      ..color = color.withOpacity(0.4)
+      ..color = color.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8;
 
     final path2 = Path();
     path2.moveTo(0, midY);
     for (double x = 0; x <= size.width; x += 1.0) {
-      final y = midY + (amplitude * 0.75) * math.sin((x / size.width) * 2 * math.pi * 1.8 + phase + math.pi / 2);
+      final y =
+          midY +
+          (amplitude * 0.75) *
+              math.sin(
+                (x / size.width) * 2 * math.pi * 1.8 + phase + math.pi / 2,
+              );
       path2.lineTo(x, y);
     }
     canvas.drawPath(path2, paint2);

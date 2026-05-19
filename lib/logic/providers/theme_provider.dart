@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/constants/app_constants.dart';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
-  Color _primaryColor = const Color(0xFF7C3AED); // Default vibrant violet/purple from screenshot
+  Color _primaryColor = const Color(
+    0xFF7C3AED,
+  ); // Default vibrant violet/purple from screenshot
 
   ThemeMode get themeMode => _themeMode;
   Color get primaryColor => _primaryColor;
 
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
-      final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
       return brightness == Brightness.dark;
     }
     return _themeMode == ThemeMode.dark;
@@ -36,7 +38,7 @@ class ThemeProvider extends ChangeNotifier {
   // Load theme settings from LocalStorage
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Load Dark Mode status
     final int? modeIndex = prefs.getInt('theme_mode');
     if (modeIndex != null) {
@@ -48,7 +50,7 @@ class ThemeProvider extends ChangeNotifier {
     if (colorValue != null) {
       _primaryColor = Color(colorValue);
     }
-    
+
     notifyListeners();
   }
 
@@ -56,7 +58,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     notifyListeners();
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('theme_mode', mode.index);
   }
@@ -65,9 +67,9 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> setPrimaryColor(Color color) async {
     _primaryColor = color;
     notifyListeners();
-    
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('theme_color', color.value);
+    await prefs.setInt('theme_color', color.toARGB32());
   }
 
   // Quick toggle dark mode

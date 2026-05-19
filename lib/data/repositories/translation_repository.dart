@@ -18,7 +18,7 @@ class TranslationRepository {
     final String cleanText = text.trim().toLowerCase();
 
     // Chinese to English mock
-    if (sourceLang == 'zh' && targetLang == 'en') {
+    if (sourceLang == '中文' && targetLang == 'English') {
       if (cleanText == '你好') {
         translationResult = 'Hello / How are you';
       } else if (cleanText == '早上好') {
@@ -28,11 +28,11 @@ class TranslationRepository {
       } else if (cleanText == '我爱开发') {
         translationResult = 'I love developing software!';
       } else {
-        translationResult = 'Mock Translation: [ "$text" translated to English ]';
+        translationResult = 'Translated: $text';
       }
     } 
     // English to Chinese mock
-    else if (sourceLang == 'en' && targetLang == 'zh') {
+    else if (sourceLang == 'English' && targetLang == '中文') {
       if (cleanText == 'hello') {
         translationResult = '你好';
       } else if (cleanText == 'good morning') {
@@ -40,12 +40,12 @@ class TranslationRepository {
       } else if (cleanText.contains('love')) {
         translationResult = '我喜欢 / 我爱...';
       } else {
-        translationResult = '模拟翻译：[ "$text" 翻译为 中文 ]';
+        translationResult = '已翻译: $text';
       }
     } 
     // Fallback translation
     else {
-      translationResult = 'Mock Translation: [ "$text" from $sourceLang to $targetLang ]';
+      translationResult = 'Translated ($sourceLang to $targetLang): $text';
     }
 
     // 3. Construct and return model

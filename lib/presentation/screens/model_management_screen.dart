@@ -78,7 +78,7 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: defaultCardBg.withOpacity(0.3),
+                    color: defaultCardBg.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -91,7 +91,7 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
+                      color: Colors.white.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     alignment: Alignment.center,
@@ -124,16 +124,18 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                               height: 8,
                               decoration: BoxDecoration(
                                 color: defaultModel.isDownloaded
-                                    ? const Color(0xFF10B981) // Emerald green dot
-                                    : const Color(0xFFFBBF24), // Amber warning dot
+                                    ? const Color(
+                                        0xFF10B981,
+                                      ) // Emerald green dot
+                                    : const Color(
+                                        0xFFFBBF24,
+                                      ), // Amber warning dot
                                 shape: BoxShape.circle,
                               ),
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              defaultModel.isDownloaded
-                                  ? '当前默认'
-                                  : '当前默认 (未下载)',
+                              defaultModel.isDownloaded ? '当前默认' : '当前默认 (未下载)',
                               style: TextStyle(
                                 color: defaultModel.isDownloaded
                                     ? const Color(0xFFD1FAE5)
@@ -155,7 +157,7 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -222,7 +224,9 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.2 : 0.03,
+                          ),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -235,7 +239,7 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: modelThemeColor.withOpacity(0.08),
+                            color: modelThemeColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           alignment: Alignment.center,
@@ -344,7 +348,7 @@ class _ModelManagementScreenState extends State<ModelManagementScreen> {
           color: isCurrentDefault
               ? const Color(0xFFECFDF5)
               : (Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF065F46).withOpacity(0.3)
+                    ? const Color(0xFF065F46).withValues(alpha: 0.3)
                     : const Color(0xFFECFDF5)),
           borderRadius: BorderRadius.circular(8),
         ),

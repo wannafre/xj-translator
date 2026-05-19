@@ -29,8 +29,8 @@ class TranslationRecord {
     return TranslationRecord(
       originalText: json['originalText'] ?? '',
       translatedText: json['translatedText'] ?? '',
-      sourceLang: json['sourceLang'] ?? 'zh',
-      targetLang: json['targetLang'] ?? 'en',
+      sourceLang: json['sourceLang'] ?? '中文',
+      targetLang: json['targetLang'] ?? 'English',
       timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
     );
   }

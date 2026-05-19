@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 38,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                        colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),

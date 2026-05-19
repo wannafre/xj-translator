@@ -43,10 +43,10 @@ class ProfileTab extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
-                )
+                ),
               ],
             ),
             child: Column(
@@ -88,7 +88,10 @@ class ProfileTab extends StatelessWidget {
                   icon: Icons.memory_rounded,
                   iconColor: Colors.pink.shade400,
                   title: '模型管理',
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -113,7 +116,9 @@ class ProfileTab extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        translationProvider.documentRetentionDays == 7 ? '临时保存7天' : '永久保存',
+                        translationProvider.documentRetentionDays == 7
+                            ? '临时保存7天'
+                            : '永久保存',
                         style: TextStyle(
                           color: primaryColor,
                           fontSize: 12,
@@ -139,12 +144,16 @@ class ProfileTab extends StatelessWidget {
                   subtitle: '自动释放后台模型驻留内存',
                   trailing: Switch(
                     value: translationProvider.isMemoryOptimized,
-                    activeColor: Colors.green.shade500,
+                    activeThumbColor: Colors.green.shade500,
                     onChanged: (val) {
                       translationProvider.toggleMemoryOptimized(val);
                       if (val) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('⚡ 智能内存优化已生效，应用后台运行时将释放 1.2GB 大模型占用！')),
+                          const SnackBar(
+                            content: Text(
+                              '⚡ 智能内存优化已生效，应用后台运行时将释放 1.2GB 大模型占用！',
+                            ),
+                          ),
                         );
                       }
                     },
@@ -184,15 +193,11 @@ class ProfileTab extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.08),
+                color: iconColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 20,
-              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 14),
 
@@ -213,7 +218,9 @@ class ProfileTab extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                        color: isDark
+                            ? Colors.grey.shade500
+                            : Colors.grey.shade400,
                         fontSize: 11,
                       ),
                     ),
@@ -223,7 +230,7 @@ class ProfileTab extends StatelessWidget {
             ),
 
             // Trailing Widget
-            if (trailing != null) trailing,
+            ?trailing,
           ],
         ),
       ),
@@ -234,18 +241,25 @@ class ProfileTab extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: isDark ? Colors.grey.shade800.withOpacity(0.5) : Colors.grey.shade100,
+      color: isDark
+          ? Colors.grey.shade800.withValues(alpha: 0.5)
+          : Colors.grey.shade100,
       indent: 64,
     );
   }
 
   // Retention Period Selector Alert Dialog
-  void _showRetentionDialog(BuildContext context, TranslationProvider provider) {
+  void _showRetentionDialog(
+    BuildContext context,
+    TranslationProvider provider,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           title: const Text('设置文档记录保留期限'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
