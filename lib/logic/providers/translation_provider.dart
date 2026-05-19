@@ -126,12 +126,49 @@ class TranslationProvider extends ChangeNotifier {
     // 3. Load Default model selection
     _defaultModelId = prefs.getString('default_model_id') ?? 'qwen_1.5b';
 
-    // 4. Load Downloaded models and verify real existence (file system on native, shared_preferences on Web)
+    // 4. Load and verify actual existence of local model files (dynamic sync)
+    await verifyDownloadedModels();
+  }
+
+  /// 🕵️ 检查并校验所有已下载模型文件的物理存在性。
+  /// 若发现物理文件被外部（如用户手动或系统清理）删除，则自动修正内存中的状态并保存到本地持久化。
+  Future<void> verifyDownloadedModels() async {
+    bool stateChanged = false;
+    final localLlmService = LocalLlmService();
+
     for (var model in _offlineModels) {
-      model.isDownloaded = await LocalLlmService().isModelDownloaded(model.id);
+      // 物理检测该模型是否存在于本地存储中（如果是 Web 平台会通过 SharedPreferences 检测状态）
+      final bool actuallyDownloaded = await localLlmService.isModelDownloaded(model.id);
+      
+      // 如果实际存在性与内存状态不匹配，进行修正
+      if (model.isDownloaded != actuallyDownloaded) {
+        model.isDownloaded = actuallyDownloaded;
+        stateChanged = true;
+        
+        // 如果被删除的模型正好是当前默认选中的模型，自动安全降级回默认的 'qwen_1.5b'
+        if (!actuallyDownloaded && _defaultModelId == model.id) {
+          _defaultModelId = 'qwen_1.5b';
+        }
+        
+        debugPrint('🤖 [模型校验] 检测到模型 "${model.name}" (${model.id}) 的本地文件状态不一致，实际存在：$actuallyDownloaded。已自动同步！');
+      }
     }
 
-    notifyListeners();
+    if (stateChanged) {
+      notifyListeners();
+
+      // 将最新校验后的下载状态与默认模型同步保存到 SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> downloaded = _offlineModels
+          .where((m) => m.isDownloaded)
+          .map((m) => m.id)
+          .toList();
+      await prefs.setStringList('downloaded_model_ids', downloaded);
+      await prefs.setString('default_model_id', _defaultModelId);
+    } else {
+      // 如果没有任何变动，但我们需要初次或手动刷新 UI 绑定状态时
+      notifyListeners();
+    }
   }
 
   // Toggle Incognito (无痕) Mode
@@ -254,10 +291,21 @@ class TranslationProvider extends ChangeNotifier {
     try {
       final localLlmService = LocalLlmService();
       
-      // Graceful native check: if running on native mobile and the model file is not downloaded yet
+      // 先进行一次全面的本地模型文件状态校验（防止用户在前台/后台手动删除了文件）
+      await verifyDownloadedModels();
+      
+      // Check if the default model is downloaded (on all platforms)
       final isDownloaded = await localLlmService.isModelDownloaded(_defaultModelId);
-      if (!isDownloaded && localLlmService.isNativeSupported) {
-        _errorMessage = '当前选中的离线模型文件不存在，请先在模型管理中下载。';
+      if (!isDownloaded) {
+        _errorMessage = '当前默认的大模型「${activeDefaultModel.name}」未下载，请先在「模型管理」中下载该模型后使用！';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      // Check model compatibility / availability (e.g. Whisper is voice only, not for text translation)
+      if (_defaultModelId == 'whisper_tiny') {
+        _errorMessage = '大模型加载错误：Whisper-Tiny 仅支持语音识别与提取，不支持文本翻译大模型推理，当前不可用！';
         _isLoading = false;
         notifyListeners();
         return;

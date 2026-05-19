@@ -175,14 +175,19 @@ class LocalLlmService {
   }) async* {
     if (text.trim().isEmpty) yield "";
 
+    final isDownloaded = await isModelDownloaded(modelId);
+    if (!isDownloaded) {
+      yield "❌ 错误：离线大模型文件不存在，请先在“模型管理”中下载大模型。";
+      return;
+    }
+
+    if (modelId == 'whisper_tiny') {
+      yield "❌ 错误：加载失败！Whisper-Tiny 仅支持语音识别与提取，不支持文本翻译大模型推理。";
+      return;
+    }
+
     // A. Native Mobile Implementation (iOS / Android)
     if (isNativeSupported) {
-      final isDownloaded = await isModelDownloaded(modelId);
-      if (!isDownloaded) {
-        yield "❌ 错误：本地模型文件不存在，请先在“模型管理”中下载模型。";
-        return;
-      }
-
       // TODO: Bind native llama.cpp library
       // For Phase 2, we simulate native processing delay first, 
       // then yield the translated result in a streaming chunk.

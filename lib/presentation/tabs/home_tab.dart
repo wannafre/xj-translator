@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../logic/providers/translation_provider.dart';
 import '../components/custom_button.dart';
-import '../components/quick_feature_card.dart';
+import '../screens/model_management_screen.dart';
+
 
 class HomeTab extends StatefulWidget {
   final ValueChanged<int> onNavigateToTab;
@@ -200,49 +201,6 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
 
           // C. Core action content (depends on the selected segment mode)
           _buildCoreActionContainer(context, provider),
-          const SizedBox(height: 24),
-
-          // D. Quick Features (快捷功能) Header
-          const Text(
-            '快捷功能',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // E. Quick Feature Grid Card Layout (文档翻译, 图片翻译)
-          Row(
-            children: [
-              Expanded(
-                child: QuickFeatureCard(
-                  icon: Icons.description_outlined,
-                  title: '文档翻译',
-                  color: Colors.teal.shade400,
-                  onTap: () {
-                    widget.onNavigateToTab(1); // Direct redirect to Document center
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: QuickFeatureCard(
-                  icon: Icons.image_outlined,
-                  title: '图片翻译',
-                  color: Colors.purple.shade400,
-                  onTap: () {
-                    _showMockDialog(
-                      context,
-                      '图片翻译',
-                      '正在调取摄像头与相册...\n[模拟：选择了一张图片进行翻译]',
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 20),
         ],
       ),
@@ -476,12 +434,46 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
               text: '开启即时监听',
               icon: Icons.play_arrow_rounded,
               onPressed: () {
+                if (!provider.activeDefaultModel.isDownloaded) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      title: const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
+                          SizedBox(width: 8),
+                          Text('翻译大模型未就绪'),
+                        ],
+                      ),
+                      content: Text('当前默认的大模型「${provider.activeDefaultModel.name}」尚未下载，无法进行本地离线即时语音翻译。\n\n请前往「模型管理」下载该大模型后重试。'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('取消'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ModelManagementScreen()),
+                            );
+                          },
+                          child: const Text('去下载', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
                 setState(() {
                   _isInstantActive = true;
                   _startInstantSimulation(provider);
                 });
               },
             ),
+
           ],
         ),
       );
@@ -634,16 +626,21 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 Text(
                   provider.isLoading
                       ? '正在离线翻译中...'
-                      : (provider.currentTranslation.isNotEmpty
-                          ? provider.currentTranslation
-                          : 'Translation will appear here...'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+                      : (provider.errorMessage.isNotEmpty
+                          ? provider.errorMessage
+                          : (provider.currentTranslation.isNotEmpty
+                              ? provider.currentTranslation
+                              : 'Translation will appear here...')),
+                  style: TextStyle(
+                    color: provider.errorMessage.isNotEmpty
+                        ? Colors.amber.shade200
+                        : Colors.white,
+                    fontSize: provider.errorMessage.isNotEmpty ? 15 : 18,
                     fontWeight: FontWeight.bold,
                     height: 1.4,
                   ),
                 ),
+
 
                 const SizedBox(height: 24),
 

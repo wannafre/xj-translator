@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../logic/providers/translation_provider.dart';
+import '../screens/model_management_screen.dart';
 
 class DocumentTab extends StatefulWidget {
   final VoidCallback? onBackToHome;
 
-  const DocumentTab({
-    super.key,
-    this.onBackToHome,
-  });
+  const DocumentTab({super.key, this.onBackToHome});
 
   @override
   State<DocumentTab> createState() => _DocumentTabState();
@@ -42,7 +41,9 @@ class _DocumentTabState extends State<DocumentTab> {
       'status': 'completed',
       'pages': 120,
       'size': '15.4MB',
-      'createdAt': DateTime.now().subtract(const Duration(days: 8)), // 8 days old!
+      'createdAt': DateTime.now().subtract(
+        const Duration(days: 8),
+      ), // 8 days old!
     },
   ];
 
@@ -78,7 +79,9 @@ class _DocumentTabState extends State<DocumentTab> {
               doc['status'] = 'completed';
               doc['progress'] = 1.0;
             } else {
-              doc['progress'] = double.parse(currentProgress.toStringAsFixed(2));
+              doc['progress'] = double.parse(
+                currentProgress.toStringAsFixed(2),
+              );
             }
           }
         }
@@ -90,107 +93,138 @@ class _DocumentTabState extends State<DocumentTab> {
     });
   }
 
-  // Simulate file uploader file picking list
-  void _showMockFilePicker(BuildContext context, TranslationProvider provider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        final mockFiles = [
-          {'name': 'Soon用户手册.docx', 'type': 'DOC', 'size': '1.1MB', 'pages': 8},
-          {'name': 'Qwen大模型白皮书.pdf', 'type': 'PDF', 'size': '4.5MB', 'pages': 42},
-          {'name': '出国旅行常用口语.txt', 'type': 'TXT', 'size': '0.3MB', 'pages': 4},
-          {'name': '财务第三季度审计.pdf', 'type': 'PDF', 'size': '3.2MB', 'pages': 20},
-        ];
-
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1B2E) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+  // Real document file picking function using file_picker
+  Future<void> _pickDocumentFile(
+    BuildContext context,
+    TranslationProvider provider,
+  ) async {
+    // 1. Check if the default model is downloaded
+    if (!provider.activeDefaultModel.isDownloaded) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          title: const Row(
             children: [
-              // Bottomsheet drag bar
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '选择本地文档进行离线翻译',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // File options
-              Column(
-                children: mockFiles.map((file) {
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: _getFileColor(file['type'] as String).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        file['type'] as String,
-                        style: TextStyle(
-                          color: _getFileColor(file['type'] as String),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      file['name'] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    subtitle: Text('${file['size']} · ${file['pages']}页'),
-                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        // Add newly picked mock file to local list with status 'translating'
-                        _documents.insert(0, {
-                          'name': file['name'] as String,
-                          'type': file['type'] as String,
-                          'status': 'translating',
-                          'progress': 0.0,
-                          'pages': file['pages'] as int,
-                          'size': file['size'] as String,
-                        });
-                      });
-                      // Make sure timer simulator is running
-                      _startTranslationProgressMock();
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
+              Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
+              SizedBox(width: 8),
+              Text('翻译大模型未就绪'),
             ],
           ),
+          content: Text(
+            '当前默认的大模型「${provider.activeDefaultModel.name}」尚未下载，无法进行本地离线文档翻译。\n\n请前往「模型管理」下载该大模型后重试。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ModelManagementScreen(),
+                  ),
+                );
+              },
+              child: const Text(
+                '前往下载',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // 2. Check model compatibility (e.g. Whisper-Tiny is unsupported for text document translation)
+    if (provider.defaultModelId == 'whisper_tiny') {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.red, size: 24),
+              SizedBox(width: 8),
+              Text('大模型不可用'),
+            ],
+          ),
+          content: Text(
+            '当前选中的大模型「${provider.activeDefaultModel.name}」仅支持语音识别与提取，不支持文档文本翻译。\n\n请前往「模型管理」切换为 Qwen 或 Llama 等翻译大模型后重试。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                '确定',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'docx', 'txt'],
+      );
+
+      if (result != null) {
+        PlatformFile file = result.files.first;
+
+        // Calculate dynamic page count based on file size or extension (for mock presentation)
+        int pages = (file.size / 50000).ceil();
+        if (pages < 1) pages = 1;
+
+        // Get size string (e.g., 2.4MB)
+        String sizeString = '';
+        if (file.size > 1024 * 1024) {
+          sizeString = '${(file.size / (1024 * 1024)).toStringAsFixed(1)}MB';
+        } else {
+          sizeString = '${(file.size / 1024).toStringAsFixed(0)}KB';
+        }
+
+        // Add file to list with status 'translating'
+        setState(() {
+          _documents.insert(0, {
+            'name': file.name,
+            'type': (file.extension ?? 'TXT').toUpperCase(),
+            'status': 'translating',
+            'progress': 0.0,
+            'pages': pages,
+            'size': sizeString,
+            'createdAt': DateTime.now(),
+          });
+        });
+
+        // Trigger translation simulation progress
+        _startTranslationProgressMock();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '成功上传文档 "${file.name}"，正在使用 ${provider.activeDefaultModel.name} 进行离线大模型翻译...',
+            ),
+            duration: const Duration(seconds: 4),
+          ),
         );
-      },
-    );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('选择文件失败: $e')));
+    }
   }
 
   // Get color depending on file types
@@ -216,8 +250,13 @@ class _DocumentTabState extends State<DocumentTab> {
             children: AppConstants.supportedLanguages.map((lang) {
               return ListTile(
                 title: Text(lang['name']!),
-                trailing: (isSource ? provider.sourceLang : provider.targetLang) == lang['code']
-                    ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
+                trailing:
+                    (isSource ? provider.sourceLang : provider.targetLang) ==
+                        lang['code']
+                    ? Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
                     : null,
                 onTap: () {
                   if (isSource) {
@@ -256,7 +295,7 @@ class _DocumentTabState extends State<DocumentTab> {
                 color: Colors.black.withOpacity(0.15),
                 blurRadius: 16,
                 spreadRadius: 4,
-              )
+              ),
             ],
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -312,7 +351,11 @@ class _DocumentTabState extends State<DocumentTab> {
                     icon: Icons.chat_bubble_rounded,
                     onTap: () {
                       Navigator.pop(context);
-                      _showShareSuccessDialog(context, '微信 (WeChat)', documentName);
+                      _showShareSuccessDialog(
+                        context,
+                        '微信 (WeChat)',
+                        documentName,
+                      );
                     },
                   ),
 
@@ -332,7 +375,9 @@ class _DocumentTabState extends State<DocumentTab> {
                   _buildShareOption(
                     context,
                     label: '更多',
-                    color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB), // Grey
+                    color: isDark
+                        ? const Color(0xFF374151)
+                        : const Color(0xFFE5E7EB), // Grey
                     iconColor: isDark ? Colors.white70 : Colors.grey.shade700,
                     icon: Icons.more_horiz_rounded,
                     onTap: () {
@@ -383,14 +428,10 @@ class _DocumentTabState extends State<DocumentTab> {
                       color: color.withOpacity(isDark ? 0.15 : 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
-                    )
+                    ),
                   ],
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 28,
-                ),
+                child: Icon(icon, color: iconColor, size: 28),
               ),
               const SizedBox(height: 8),
               // Name of the app
@@ -409,7 +450,11 @@ class _DocumentTabState extends State<DocumentTab> {
   }
 
   // Share association success mockup dialog
-  void _showShareSuccessDialog(BuildContext context, String appName, String documentName) {
+  void _showShareSuccessDialog(
+    BuildContext context,
+    String appName,
+    String documentName,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -421,12 +466,17 @@ class _DocumentTabState extends State<DocumentTab> {
             Text('关联 $appName 分享成功'),
           ],
         ),
-        content: Text('已成功唤醒本地「$appName」应用，正将翻译后的文档：\n\n📄 $documentName\n\n打包传输分享给选定的好友。'),
+        content: Text(
+          '已成功唤醒本地「$appName」应用，正将翻译后的文档：\n\n📄 $documentName\n\n打包传输分享给选定的好友。',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('确定', style: TextStyle(fontWeight: FontWeight.bold)),
-          )
+            child: const Text(
+              '确定',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );
@@ -439,7 +489,9 @@ class _DocumentTabState extends State<DocumentTab> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Filter documents based on document retention settings (e.g. 7 days)
-    final cutoff = DateTime.now().subtract(Duration(days: provider.documentRetentionDays));
+    final cutoff = DateTime.now().subtract(
+      Duration(days: provider.documentRetentionDays),
+    );
     final displayedDocs = _documents.where((doc) {
       if (provider.documentRetentionDays == 0) return true;
       final createdAt = doc['createdAt'] as DateTime?;
@@ -450,10 +502,14 @@ class _DocumentTabState extends State<DocumentTab> {
     // Language labels synced with provider source and target langs
     final String srcLangName = provider.sourceLang == 'zh'
         ? '🇨🇳 中文'
-        : (provider.sourceLang == 'en' ? '🇺🇸 English' : '🌐 ' + provider.sourceLang.toUpperCase());
+        : (provider.sourceLang == 'en'
+              ? '🇺🇸 English'
+              : '🌐 ' + provider.sourceLang.toUpperCase());
     final String targetLangName = provider.targetLang == 'zh'
         ? '🇨🇳 中文'
-        : (provider.targetLang == 'en' ? '🇺🇸 English' : '🌐 ' + provider.targetLang.toUpperCase());
+        : (provider.targetLang == 'en'
+              ? '🇺🇸 English'
+              : '🌐 ' + provider.targetLang.toUpperCase());
 
     return Container(
       color: isDark ? const Color(0xFF0F0E1E) : const Color(0xFFF9F8FD),
@@ -470,7 +526,7 @@ class _DocumentTabState extends State<DocumentTab> {
                 children: [
                   // 2. LARGE MAIN UPLOAD CARD
                   GestureDetector(
-                    onTap: () => _showMockFilePicker(context, provider),
+                    onTap: () => _pickDocumentFile(context, provider),
                     child: Container(
                       height: 190,
                       decoration: BoxDecoration(
@@ -482,10 +538,12 @@ class _DocumentTabState extends State<DocumentTab> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+                            color: Colors.black.withOpacity(
+                              isDark ? 0.2 : 0.03,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ],
                       ),
                       child: Column(
@@ -500,7 +558,8 @@ class _DocumentTabState extends State<DocumentTab> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.file_download_outlined, // download-styled down-arrow icon
+                              Icons
+                                  .file_download_outlined, // download-styled down-arrow icon
                               color: primaryColor,
                               size: 28,
                             ),
@@ -518,7 +577,9 @@ class _DocumentTabState extends State<DocumentTab> {
                           Text(
                             '支持 PDF  DOCX  TXT 格式',
                             style: TextStyle(
-                              color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                              color: isDark
+                                  ? Colors.grey.shade500
+                                  : Colors.grey.shade400,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -532,19 +593,24 @@ class _DocumentTabState extends State<DocumentTab> {
                   // 3. LANGUAGE SELECTOR PILL CARD (🇨🇳 中文 → 🇺🇸 English)
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E1B2E) : Colors.white,
                         borderRadius: BorderRadius.circular(30),
                         border: Border.all(
-                          color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                          color: isDark
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade100,
                         ),
                         boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 6,
                             offset: Offset(0, 2),
-                          )
+                          ),
                         ],
                       ),
                       child: Row(
@@ -552,10 +618,17 @@ class _DocumentTabState extends State<DocumentTab> {
                         children: [
                           // Source lang
                           GestureDetector(
-                            onTap: () => _showLanguageSelectDialog(context, provider, isSource: true),
+                            onTap: () => _showLanguageSelectDialog(
+                              context,
+                              provider,
+                              isSource: true,
+                            ),
                             child: Text(
                               srcLangName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -568,10 +641,17 @@ class _DocumentTabState extends State<DocumentTab> {
                           const SizedBox(width: 14),
                           // Target lang
                           GestureDetector(
-                            onTap: () => _showLanguageSelectDialog(context, provider, isSource: false),
+                            onTap: () => _showLanguageSelectDialog(
+                              context,
+                              provider,
+                              isSource: false,
+                            ),
                             child: Text(
                               targetLangName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],
@@ -602,17 +682,23 @@ class _DocumentTabState extends State<DocumentTab> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E1B2E) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF1E1B2E)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                            color: isDark
+                                ? Colors.grey.shade800
+                                : Colors.grey.shade100,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(isDark ? 0.1 : 0.02),
+                              color: Colors.black.withOpacity(
+                                isDark ? 0.1 : 0.02,
+                              ),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
-                            )
+                            ),
                           ],
                         ),
                         child: Row(
@@ -658,7 +744,9 @@ class _DocumentTabState extends State<DocumentTab> {
                                         ? '已翻译 · ${doc['pages']}页 · ${doc['size']}'
                                         : '翻译中... ${(doc['progress'] * 100).toInt()}% · ${doc['pages']}页 · ${doc['size']}',
                                     style: TextStyle(
-                                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+                                      color: isDark
+                                          ? Colors.grey.shade400
+                                          : Colors.grey.shade500,
                                       fontSize: 11.5,
                                     ),
                                   ),
@@ -675,14 +763,21 @@ class _DocumentTabState extends State<DocumentTab> {
                                 child: CircularProgressIndicator(
                                   value: doc['progress'],
                                   strokeWidth: 3.0,
-                                  backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                                  backgroundColor: isDark
+                                      ? Colors.grey.shade800
+                                      : Colors.grey.shade200,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    primaryColor,
+                                  ),
                                 ),
                               )
                             else
                               // Share Action Button calling _showShareBottomSheet!
                               GestureDetector(
-                                onTap: () => _showShareBottomSheet(context, doc['name']!),
+                                onTap: () => _showShareBottomSheet(
+                                  context,
+                                  doc['name']!,
+                                ),
                                 child: Container(
                                   width: 36,
                                   height: 36,
@@ -691,7 +786,8 @@ class _DocumentTabState extends State<DocumentTab> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(
-                                    Icons.reply_rounded, // share/reply icon matching screenshot
+                                    Icons
+                                        .reply_rounded, // share/reply icon matching screenshot
                                     color: primaryColor,
                                     size: 18,
                                   ),

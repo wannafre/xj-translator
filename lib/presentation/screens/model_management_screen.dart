@@ -2,8 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../logic/providers/translation_provider.dart';
 
-class ModelManagementScreen extends StatelessWidget {
+class ModelManagementScreen extends StatefulWidget {
   const ModelManagementScreen({super.key});
+
+  @override
+  State<ModelManagementScreen> createState() => _ModelManagementScreenState();
+}
+
+class _ModelManagementScreenState extends State<ModelManagementScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 页面初始化时，异步执行一次模型物理文件存在性校验，若有手动删除则自动校正
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<TranslationProvider>().verifyDownloadedModels();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
